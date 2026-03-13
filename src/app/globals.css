@@ -1,57 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --accent-green: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-cyan: #06b6d4;
-  --accent-red: #ef4444;
-  --accent-blue: #3b82f6;
-  --accent-orange: #f97316;
+@theme inline {
+  --color-accent-green: #10b981;
+  --color-accent-amber: #f59e0b;
+  --color-accent-cyan: #06b6d4;
+  --color-accent-red: #ef4444;
+  --color-accent-blue: #3b82f6;
+  --color-accent-orange: #f97316;
 
-  --bg-page: #0c0c0c;
-  --bg-surface: #171717;
-  --bg-elevated: #1a1a1a;
-  --bg-input: #111111;
+  --color-bg-page: #0c0c0c;
+  --color-bg-surface: #171717;
+  --color-bg-elevated: #1a1a1a;
+  --color-bg-input: #111111;
 
-  --text-primary: #e5e5e5;
-  --text-secondary: #a3a3a3;
-  --text-tertiary: #737373;
-  --text-muted: #525252;
+  --color-text-primary: #e5e5e5;
+  --color-text-secondary: #a3a3a3;
+  --color-text-tertiary: #737373;
+  --color-text-muted: #525252;
 
-  --border-primary: #1f1f1f;
-  --border-secondary: #252525;
-  --border-focus: #10b981;
+  --color-border-primary: #1f1f1f;
+  --color-border-secondary: #252525;
+  --color-border-focus: #10b981;
 
-  --green-primary: #22c55e;
+  --color-green-primary: #22c55e;
 
   --font-mono: "JetBrains Mono", monospace;
-}
-
-@theme inline {
-  --color-accent-green: var(--accent-green);
-  --color-accent-amber: var(--accent-amber);
-  --color-accent-cyan: var(--accent-cyan);
-  --color-accent-red: var(--accent-red);
-  --color-accent-blue: var(--accent-blue);
-  --color-accent-orange: var(--accent-orange);
-
-  --color-bg-page: var(--bg-page);
-  --color-bg-surface: var(--bg-surface);
-  --color-bg-elevated: var(--bg-elevated);
-  --color-bg-input: var(--bg-input);
-
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-  --color-text-muted: var(--text-muted);
-
-  --color-border-primary: var(--border-primary);
-  --color-border-secondary: var(--border-secondary);
-  --color-border-focus: var(--border-focus);
-
-  --color-green-primary: var(--green-primary);
-
-  --font-mono: var(--font-mono);
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 
   --radius-m: 16px;

@@ -40,10 +40,12 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
       >
         <SwitchPrimitives.Thumb
           className={cn(
-            "pointer-events-none block rounded-full bg-white transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-1",
-            size === "sm" && "data-[state=checked]:translate-x-4",
-            size === "lg" &&
-              "data-[state=checked]:translate-x-7 data-[state=unchecked]:translate-x-1.5",
+            "pointer-events-none block rounded-full transition-transform data-[state=checked]:bg-[#0A0A0A] data-[state=unchecked]:bg-[#6B7280] data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-1",
+            size === "sm"
+              ? "h-3.5 w-3.5 data-[state=checked]:translate-x-4"
+              : size === "lg"
+                ? "h-[18px] w-[18px] data-[state=checked]:translate-x-7 data-[state=unchecked]:translate-x-1.5"
+                : "h-4 w-4",
           )}
         />
       </SwitchPrimitives.Root>

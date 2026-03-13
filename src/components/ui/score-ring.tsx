@@ -57,8 +57,8 @@ export const ScoreRing = forwardRef<HTMLDivElement, ScoreRingProps>(
           />
           <defs>
             <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="var(--accent-green)" />
-              <stop offset="35%" stopColor="var(--accent-amber)" />
+              <stop offset="0%" stopColor="var(--color-accent-green)" />
+              <stop offset="35%" stopColor="var(--color-accent-amber)" />
               <stop offset="36%" stopColor="transparent" />
             </linearGradient>
           </defs>
