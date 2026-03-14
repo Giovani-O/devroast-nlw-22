@@ -49,6 +49,12 @@ npm run biome    # Verificar linting
 npx tsc --noEmit # Verificar tipos TypeScript
 ```
 
+Adicionalmente, você pode popular o banco com dados de exemplo (100 submissões + 100 análises) rodando:
+
+```bash
+npm run seed     # Popular o banco com dados de exemplo (usa tsx + @faker-js/faker)
+```
+
 ### Banco de dados
 
 #### Pré-requisitos adicionais
@@ -66,7 +72,7 @@ AI_MODEL_VERSION=1.0.0
 #### Subir o PostgreSQL com Docker
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 #### Gerar e aplicar o schema
