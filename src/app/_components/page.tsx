@@ -1,3 +1,10 @@
+/**
+ * Page for previewing UI components.
+ *
+ * To visualize this page on localhost:3000/components,
+ * remove the underscore from the folder name.
+ * */
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

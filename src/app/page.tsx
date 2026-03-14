@@ -1,9 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CodeEditor } from "@/components/ui/code-editor";
 import { Toggle } from "@/components/ui/toggle";
 
 export default function Home() {
+  const [_code, setCode] = useState("");
+  const [_lang, setLang] = useState("plaintext");
+
   return (
     <div className="w-full flex flex-col items-center gap-8">
       {/* Hero Section */}
@@ -50,29 +55,12 @@ export default function Home() {
         </div>
 
         {/* Code Content Area */}
-        <div className="flex min-h-[320px]">
-          {/* Line Numbers */}
-          <div
-            className="bg-bg-surface border-r border-border-primary px-3 py-4 text-text-tertiary font-mono flex flex-col items-end gap-2"
-            style={{ width: "48px", fontSize: "12px" }}
-          >
-            <span>1</span>
-            <span>2</span>
-            <span>3</span>
-            <span>4</span>
-            <span>5</span>
-          </div>
-
-          {/* Code Area */}
-          <div
-            className="flex-1 p-4 font-mono text-text-primary flex items-start justify-start"
-            style={{ fontSize: "14px" }}
-          >
-            <span className="text-text-tertiary">
-              {"// paste your code here"}
-            </span>
-          </div>
-        </div>
+        <CodeEditor
+          onChange={(c, l) => {
+            setCode(c);
+            setLang(l);
+          }}
+        />
       </div>
 
       {/* Actions Bar */}

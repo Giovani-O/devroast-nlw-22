@@ -49,6 +49,40 @@ npm run biome    # Verificar linting
 npx tsc --noEmit # Verificar tipos TypeScript
 ```
 
+### Banco de dados
+
+#### Pré-requisitos adicionais
+- Docker e Docker Compose
+
+#### Configuração do ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto com o seguinte conteúdo:
+
+```env
+DATABASE_URL=postgresql://devroast:devroast_pw@localhost:5432/devroast
+AI_MODEL_VERSION=1.0.0
+```
+
+#### Subir o PostgreSQL com Docker
+
+```bash
+docker-compose up -d
+```
+
+#### Gerar e aplicar o schema
+
+```bash
+npm run db:generate   # Gera os arquivos de migration a partir do schema
+npm run db:push       # Aplica o schema no banco de dados
+```
+
+#### Outros comandos de banco
+
+```bash
+npm run db:migrate    # Executa as migrations geradas
+npm run db:studio     # Abre o Drizzle Studio para visualizar os dados
+```
+
 ## Desenvolvido em
 
 Projeto desenvolvido durante o evento **NLW (Next Level Week)** da **Rocketseat**.

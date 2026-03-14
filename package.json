@@ -7,12 +7,19 @@
     "build": "next build",
     "start": "next start",
     "biome:fix": "biome check --write",
-    "biome": "biome check"
+    "biome": "biome check",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@radix-ui/react-switch": "^1.2.6",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.1",
+    "highlight.js": "^11.11.1",
     "next": "16.1.6",
+    "postgres": "^3.4.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "shiki": "^4.0.2",
@@ -25,6 +32,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
