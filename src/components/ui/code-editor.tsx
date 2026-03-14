@@ -205,21 +205,25 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
 
     // Detect language from text using highlight.js (defined above)
 
-    // Initialise shiki on mount
+    // Initialise shiki once on mount and dispose on unmount
     useEffect(() => {
       let cancelled = false;
       createHighlighter({ themes: ["vesper"], langs: [] }).then((h) => {
-        if (!cancelled) {
-          highlighterRef.current = h;
-          setIsHighlighterReady(true);
-          // Detect language for current code (if any)
-          if (code && code.trim().length >= 5) detectLanguage(code);
+        if (cancelled) {
+          h.dispose();
+          return;
         }
+        highlighterRef.current = h;
+        setIsHighlighterReady(true);
       });
       return () => {
         cancelled = true;
+        if (highlighterRef.current) {
+          highlighterRef.current.dispose();
+          highlighterRef.current = null;
+        }
       };
-    }, [detectLanguage, code]);
+    }, []);
 
     // Show raw (escaped) code immediately whenever `code` changes so user sees typed/pasted text
     useEffect(() => {

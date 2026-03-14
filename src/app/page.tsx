@@ -74,8 +74,8 @@ export default function Home() {
             <span
               className={
                 _code.length > MAX_SNIPPET
-                  ? "font-mono text-accent-red"
-                  : "font-mono text-text-tertiary"
+                  ? "font-mono text-accent-red tabular-nums"
+                  : "font-mono text-text-tertiary tabular-nums"
               }
               style={{ fontSize: "12px" }}
             >

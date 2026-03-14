@@ -44,7 +44,7 @@ export async function CodeBlock({
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between w-full"
+        className="flex items-center justify-between w-full bg-bg-page"
         style={{
           height: "40px",
           padding: "0 16px",
