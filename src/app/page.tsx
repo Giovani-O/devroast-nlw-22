@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/ui/code-editor";
@@ -118,13 +119,13 @@ export default function Home() {
               shame_leaderboard
             </span>
           </div>
-          <button
-            type="button"
+          <Link
+            href="/leaderboard"
             className="border border-border-primary font-mono text-text-secondary hover:text-text-primary transition-colors"
             style={{ fontSize: "12px", padding: "6px 12px" }}
           >
             $ view_all &gt;&gt;
-          </button>
+          </Link>
         </div>
 
         {/* Subtitle */}

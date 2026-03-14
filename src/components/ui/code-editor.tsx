@@ -343,7 +343,10 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
     const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
     return (
-      <div ref={ref} className={cn("flex min-h-[320px]", className)}>
+      <div
+        ref={ref}
+        className={cn("flex min-h-[320px] max-h-[360px]", className)}
+      >
         {/* Line Numbers */}
         <div
           ref={lineNumsRef}
