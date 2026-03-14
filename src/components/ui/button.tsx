@@ -1,11 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
 import { type ButtonHTMLAttributes, forwardRef } from "react";
-import { twMerge } from "tailwind-merge";
 import { tv, type VariantProps } from "tailwind-variants";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "./utils";
 
 const buttonVariants = tv({
   base: "inline-flex items-center justify-center gap-2 font-mono text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -48,7 +43,11 @@ export interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
     ButtonVariants {}
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+/**
+ * Base Button component with support for multiple variants, sizes, and border radius options
+ * Use semantic sub-components (Button.Primary, Button.Destructive, etc.) for simpler usage
+ */
+const ButtonComponent = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, rounded, ...props }, ref) => {
     return (
       <button
@@ -60,4 +59,136 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   },
 );
 
-Button.displayName = "Button";
+ButtonComponent.displayName = "Button";
+
+/**
+ * Semantic sub-components for common button patterns
+ * These reduce prop verbosity by providing sensible defaults
+ */
+
+/** Primary button - Green/default style for primary actions */
+const ButtonPrimary = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { variant = "default", size = "default", rounded = "default", ...props },
+    ref,
+  ) => (
+    <ButtonComponent
+      ref={ref}
+      variant={variant}
+      size={size}
+      rounded={rounded}
+      {...props}
+    />
+  ),
+);
+ButtonPrimary.displayName = "Button.Primary";
+
+/** Destructive button - Red style for destructive actions */
+const ButtonDestructive = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      variant = "destructive",
+      size = "default",
+      rounded = "default",
+      ...props
+    },
+    ref,
+  ) => (
+    <ButtonComponent
+      ref={ref}
+      variant={variant}
+      size={size}
+      rounded={rounded}
+      {...props}
+    />
+  ),
+);
+ButtonDestructive.displayName = "Button.Destructive";
+
+/** Secondary button - Elevated background for secondary actions */
+const ButtonSecondary = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { variant = "secondary", size = "default", rounded = "default", ...props },
+    ref,
+  ) => (
+    <ButtonComponent
+      ref={ref}
+      variant={variant}
+      size={size}
+      rounded={rounded}
+      {...props}
+    />
+  ),
+);
+ButtonSecondary.displayName = "Button.Secondary";
+
+/** Ghost button - Minimal style for tertiary actions */
+const ButtonGhost = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { variant = "ghost", size = "default", rounded = "default", ...props },
+    ref,
+  ) => (
+    <ButtonComponent
+      ref={ref}
+      variant={variant}
+      size={size}
+      rounded={rounded}
+      {...props}
+    />
+  ),
+);
+ButtonGhost.displayName = "Button.Ghost";
+
+/** Outline button - Border style for outline actions */
+const ButtonOutline = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { variant = "outline", size = "default", rounded = "default", ...props },
+    ref,
+  ) => (
+    <ButtonComponent
+      ref={ref}
+      variant={variant}
+      size={size}
+      rounded={rounded}
+      {...props}
+    />
+  ),
+);
+ButtonOutline.displayName = "Button.Outline";
+
+/** Link button - Text only style for link-like buttons */
+const ButtonLink = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { variant = "link", size = "default", rounded = "default", ...props },
+    ref,
+  ) => (
+    <ButtonComponent
+      ref={ref}
+      variant={variant}
+      size={size}
+      rounded={rounded}
+      {...props}
+    />
+  ),
+);
+ButtonLink.displayName = "Button.Link";
+
+/**
+ * Compound Button component with semantic sub-components
+ * Usage:
+ * - <Button /> - Base component with full control over variants
+ * - <Button.Primary /> - Primary action button
+ * - <Button.Destructive /> - Destructive action button
+ * - <Button.Secondary /> - Secondary action button
+ * - <Button.Ghost /> - Ghost/minimal button
+ * - <Button.Outline /> - Outline button
+ * - <Button.Link /> - Link-style button
+ */
+export const Button = Object.assign(ButtonComponent, {
+  Primary: ButtonPrimary,
+  Destructive: ButtonDestructive,
+  Secondary: ButtonSecondary,
+  Ghost: ButtonGhost,
+  Outline: ButtonOutline,
+  Link: ButtonLink,
+});

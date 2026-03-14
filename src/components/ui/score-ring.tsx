@@ -1,19 +1,28 @@
 "use client";
 
-import { type ClassValue, clsx } from "clsx";
 import { forwardRef, type HTMLAttributes } from "react";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "./utils";
 
 export interface ScoreRingProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Current score value to display
+   */
   score: number;
+  /**
+   * Maximum score value (default: 100)
+   */
   maxScore?: number;
+  /**
+   * Size of the ring in pixels (default: 180)
+   */
   size?: number;
 }
 
+/**
+ * ScoreRing component - Circular progress indicator with gradient
+ * Displays a score as a circular ring with gradient fill
+ * Uses SVG for smooth rendering and supports custom sizes
+ */
 export const ScoreRing = forwardRef<HTMLDivElement, ScoreRingProps>(
   ({ className, score, maxScore = 100, size = 180, ...props }, ref) => {
     const percentage = (score / maxScore) * 100;

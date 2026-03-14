@@ -311,7 +311,7 @@ export default function Home() {
             <span>{"showing top 4 of 2,847 ·"}</span>
             <a
               href="/leaderboard"
-              className="text-text-tertiary hover:text-accent-green transition-colors"
+              className="text-text-tertiary hover:text-text-primary transition-colors"
             >
               view full leaderboard &gt;&gt;
             </a>

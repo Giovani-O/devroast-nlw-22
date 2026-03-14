@@ -1,11 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
 import { forwardRef, type HTMLAttributes } from "react";
-import { twMerge } from "tailwind-merge";
 import { tv, type VariantProps } from "tailwind-variants";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "./utils";
 
 const badgeVariants = tv({
   base: "inline-flex items-center gap-2 rounded-md font-mono text-xs font-medium",
@@ -31,7 +26,11 @@ export interface BadgeProps
   extends HTMLAttributes<HTMLDivElement>,
     BadgeVariants {}
 
-export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
+/**
+ * Base Badge component with support for multiple status variants
+ * Use semantic sub-components (Badge.Critical, Badge.Warning, etc.) for simpler usage
+ */
+const BadgeComponent = forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant, ...props }, ref) => {
     return (
       <div
@@ -43,4 +42,57 @@ export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
   },
 );
 
-Badge.displayName = "Badge";
+BadgeComponent.displayName = "Badge";
+
+/**
+ * Semantic sub-components for common badge patterns
+ * These reduce prop verbosity by providing sensible defaults
+ */
+
+/** Critical badge - Red style for critical/error status */
+const BadgeCritical = forwardRef<HTMLDivElement, BadgeProps>(
+  ({ variant = "critical", ...props }, ref) => (
+    <BadgeComponent ref={ref} variant={variant} {...props} />
+  ),
+);
+BadgeCritical.displayName = "Badge.Critical";
+
+/** Warning badge - Amber style for warning status */
+const BadgeWarning = forwardRef<HTMLDivElement, BadgeProps>(
+  ({ variant = "warning", ...props }, ref) => (
+    <BadgeComponent ref={ref} variant={variant} {...props} />
+  ),
+);
+BadgeWarning.displayName = "Badge.Warning";
+
+/** Good badge - Green style for success/good status */
+const BadgeGood = forwardRef<HTMLDivElement, BadgeProps>(
+  ({ variant = "good", ...props }, ref) => (
+    <BadgeComponent ref={ref} variant={variant} {...props} />
+  ),
+);
+BadgeGood.displayName = "Badge.Good";
+
+/** Verdict badge - Cyan style for verdict/info status */
+const BadgeVerdict = forwardRef<HTMLDivElement, BadgeProps>(
+  ({ variant = "verdict", ...props }, ref) => (
+    <BadgeComponent ref={ref} variant={variant} {...props} />
+  ),
+);
+BadgeVerdict.displayName = "Badge.Verdict";
+
+/**
+ * Compound Badge component with semantic sub-components
+ * Usage:
+ * - <Badge /> - Base component with full control over variants
+ * - <Badge.Critical /> - Critical/error status badge
+ * - <Badge.Warning /> - Warning status badge
+ * - <Badge.Good /> - Success/good status badge
+ * - <Badge.Verdict /> - Info/verdict status badge
+ */
+export const Badge = Object.assign(BadgeComponent, {
+  Critical: BadgeCritical,
+  Warning: BadgeWarning,
+  Good: BadgeGood,
+  Verdict: BadgeVerdict,
+});
