@@ -37,8 +37,6 @@ const HLJS_TO_SHIKI: Record<string, string> = {
 
 const SUPPORTED_LANG_NAMES = Object.keys(HLJS_TO_SHIKI);
 
-const STORAGE_KEY = "devroast_code";
-
 // Shared styles for both the textarea and the overlay div — must be pixel-perfect identical
 const EDITOR_STYLE: React.CSSProperties = {
   fontFamily: "var(--font-mono)",
@@ -67,14 +65,25 @@ export interface CodeEditorProps {
  * a shiki-highlighted <div>. highlight.js is used only for language detection
  * (on paste events and significant text growth); shiki renders the final HTML.
  */
+const HIGHLIGHT_DEBOUNCE = 50; // ms
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function makeRawHtml(code: string) {
+  // Minimal fallback HTML (unhighlighted) shown immediately while shiki runs
+  return `<pre class="language-plaintext"><code>${escapeHtml(code)}</code></pre>`;
+}
+
 export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
   ({ onChange, className }, ref) => {
-    const [code, setCode] = useState<string>(() => {
-      if (typeof window !== "undefined") {
-        return localStorage.getItem(STORAGE_KEY) ?? "";
-      }
-      return "";
-    });
+    const [code, setCode] = useState<string>("");
     const [detectedLang, setDetectedLang] = useState<string>("plaintext");
     const [highlightedHtml, setHighlightedHtml] = useState<string>("");
     const [isHighlighterReady, setIsHighlighterReady] = useState(false);
@@ -96,8 +105,27 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
         return;
       }
 
-      // Let highlight.js inspect all languages for better accuracy
-      const result = hljs.highlightAuto(text);
+      // Quick heuristics for JS/TS/React to avoid short- snippet misclassification
+      const hasUseState = /\buseState\s*\(/.test(text);
+      const hasReactImport =
+        /from\s+["']react["']/.test(text) || /import\s+React\b/.test(text);
+      const hasJsx =
+        /<\/?[A-Za-z][\w-]*/.test(text) && /\/.+>/.test(text) === false
+          ? /<\w+/.test(text)
+          : /<\/?[A-Za-z][\w-]*/.test(text);
+      const hasTsTokens = /\b(interface|type|implements|enum|:\s*\w+)/.test(
+        text,
+      );
+
+      if (hasUseState || hasReactImport || hasJsx) {
+        // Prefer TypeScript when we see TS tokens, otherwise prefer TypeScript per preference
+        setDetectedLang(hasTsTokens ? "typescript" : "typescript");
+        lastDetectionLengthRef.current = text.length;
+        return;
+      }
+
+      // Let highlight.js inspect only the supported languages (faster + fewer false positives)
+      const result = hljs.highlightAuto(text, SUPPORTED_LANG_NAMES);
       const hljsLang = result.language;
 
       if (!hljsLang) {
@@ -110,7 +138,12 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
         HLJS_TO_SHIKI[hljsLang] ?? (hljsLang === "html" ? "html" : undefined);
 
       if (shikiLang) {
-        setDetectedLang(shikiLang);
+        // If heuristic suggests TypeScript but hljs returned javascript, prefer typescript
+        if (shikiLang === "javascript" && hasTsTokens) {
+          setDetectedLang("typescript");
+        } else {
+          setDetectedLang(shikiLang);
+        }
       } else {
         setDetectedLang("plaintext");
       }
@@ -162,7 +195,7 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
         } catch {
           // ignore detection errors
         }
-      }, 150);
+      }, HIGHLIGHT_DEBOUNCE);
 
       return () => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -178,23 +211,26 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
         if (!cancelled) {
           highlighterRef.current = h;
           setIsHighlighterReady(true);
-          // If code was restored from localStorage, detect its language now
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored && stored.trim().length >= 5) {
-            detectLanguage(stored);
-          }
+          // Detect language for current code (if any)
+          if (code && code.trim().length >= 5) detectLanguage(code);
         }
       });
       return () => {
         cancelled = true;
       };
-    }, [detectLanguage]);
+    }, [detectLanguage, code]);
+
+    // Show raw (escaped) code immediately whenever `code` changes so user sees typed/pasted text
+    useEffect(() => {
+      setHighlightedHtml(makeRawHtml(code));
+    }, [code]);
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newCode = e.target.value;
         setCode(newCode);
-        localStorage.setItem(STORAGE_KEY, newCode);
+        // Show raw text immediately to eliminate perceived input lag
+        setHighlightedHtml(makeRawHtml(newCode));
         onChange?.(newCode, detectedLang);
 
         // Re-detect on significant growth (≥20 chars and ≥50% growth since last detection)
@@ -212,12 +248,32 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
     const handlePaste = useCallback(
       (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
         const pasted = e.clipboardData.getData("text");
-        if (pasted) {
-          // Detection runs after state updates — use the pasted text directly
+        if (!pasted) return;
+        // Intercept paste so we can update the raw overlay immediately (prevent default to avoid double-insert)
+        e.preventDefault();
+        const ta = textareaRef.current;
+        if (!ta) {
+          // fallback: run detection on pasted text
           setTimeout(() => detectLanguage(pasted), 0);
+          return;
         }
+        const { selectionStart, selectionEnd, value } = ta;
+        const newCode =
+          value.slice(0, selectionStart) + pasted + value.slice(selectionEnd);
+        setCode(newCode);
+        // Show raw immediately
+        setHighlightedHtml(makeRawHtml(newCode));
+        // move cursor after pasted content
+        requestAnimationFrame(() => {
+          const pos = selectionStart + pasted.length;
+          ta.selectionStart = pos;
+          ta.selectionEnd = pos;
+        });
+        onChange?.(newCode, detectedLang);
+        // run detection async
+        setTimeout(() => detectLanguage(newCode), 0);
       },
-      [detectLanguage],
+      [detectLanguage, onChange, detectedLang],
     );
 
     const handleKeyDown = useCallback(
@@ -236,7 +292,6 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
               const newValue =
                 value.slice(0, lineStart) + value.slice(lineStart + spaces);
               setCode(newValue);
-              localStorage.setItem(STORAGE_KEY, newValue);
               // Restore cursor position after React re-render
               requestAnimationFrame(() => {
                 textarea.selectionStart = selectionStart - spaces;
@@ -247,7 +302,6 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
             // Tab: insert 2 spaces
             const newValue = `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`;
             setCode(newValue);
-            localStorage.setItem(STORAGE_KEY, newValue);
             requestAnimationFrame(() => {
               textarea.selectionStart = selectionStart + 2;
               textarea.selectionEnd = selectionStart + 2;
@@ -264,7 +318,6 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
             leading +
             value.slice(selectionEnd);
           setCode(newValue);
-          localStorage.setItem(STORAGE_KEY, newValue);
           requestAnimationFrame(() => {
             const pos = selectionStart + 1 + leading.length;
             textarea.selectionStart = pos;
