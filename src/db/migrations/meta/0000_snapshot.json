@@ -137,12 +137,8 @@
           "name": "analyses_submission_id_submissions_id_fk",
           "tableFrom": "analyses",
           "tableTo": "submissions",
-          "columnsFrom": [
-            "submission_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["submission_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -233,12 +229,8 @@
           "name": "analysis_logs_submission_id_submissions_id_fk",
           "tableFrom": "analysis_logs",
           "tableTo": "submissions",
-          "columnsFrom": [
-            "submission_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["submission_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -246,12 +238,8 @@
           "name": "analysis_logs_analysis_id_analyses_id_fk",
           "tableFrom": "analysis_logs",
           "tableTo": "analyses",
-          "columnsFrom": [
-            "analysis_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["analysis_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -379,20 +367,12 @@
     "public.analysis_mode": {
       "name": "analysis_mode",
       "schema": "public",
-      "values": [
-        "serious",
-        "roast"
-      ]
+      "values": ["serious", "roast"]
     },
     "public.analysis_status": {
       "name": "analysis_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "processing",
-        "completed",
-        "failed"
-      ]
+      "values": ["pending", "processing", "completed", "failed"]
     },
     "public.programming_language": {
       "name": "programming_language",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
+import { TRPCReactProvider } from "@/trpc/client";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
@@ -29,19 +30,21 @@ export default function RootLayout({
       <body
         className={`${jetbrainsMono.variable} ${ibmPlexMono.variable} antialiased bg-bg-page text-text-primary`}
       >
-        <Navbar />
-        <main
-          className="w-full flex justify-center"
-          style={{
-            paddingTop: "80px",
-            paddingLeft: "40px",
-            paddingRight: "40px",
-          }}
-        >
-          <div className="w-full max-w-[960px] flex flex-col items-center">
-            {children}
-          </div>
-        </main>
+        <TRPCReactProvider>
+          <Navbar />
+          <main
+            className="w-full flex justify-center"
+            style={{
+              paddingTop: "80px",
+              paddingLeft: "40px",
+              paddingRight: "40px",
+            }}
+          >
+            <div className="w-full max-w-[960px] flex flex-col items-center">
+              {children}
+            </div>
+          </main>
+        </TRPCReactProvider>
       </body>
     </html>
   );
