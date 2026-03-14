@@ -89,7 +89,38 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastDetectionLengthRef = useRef<number>(0);
 
+    const detectLanguage = useCallback((text: string) => {
+      // very short text is noisy; keep as plaintext
+      if (text.trim().length < 3) {
+        setDetectedLang("plaintext");
+        return;
+      }
+
+      // Let highlight.js inspect all languages for better accuracy
+      const result = hljs.highlightAuto(text);
+      const hljsLang = result.language;
+
+      if (!hljsLang) {
+        setDetectedLang("plaintext");
+        return;
+      }
+
+      // Map hljs name -> shiki name when possible
+      const shikiLang =
+        HLJS_TO_SHIKI[hljsLang] ?? (hljsLang === "html" ? "html" : undefined);
+
+      if (shikiLang) {
+        setDetectedLang(shikiLang);
+      } else {
+        setDetectedLang("plaintext");
+      }
+
+      lastDetectionLengthRef.current = text.length;
+    }, []);
+
     // Re-highlight whenever code or language changes (debounced 150ms)
+    // Also re-run language detection after highlighting so the language badge
+    // reflects the most recent content.
     useEffect(() => {
       if (!isHighlighterReady || !highlighterRef.current) return;
 
@@ -122,26 +153,23 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
 
         const html = highlighter.codeToHtml(code, { lang, theme: "vesper" });
         setHighlightedHtml(html);
+
+        // Run a detection pass after highlighting so the language badge updates
+        // along with the rendered output. This is debounced together with
+        // highlighting to avoid excessive hljs calls.
+        try {
+          detectLanguage(code);
+        } catch {
+          // ignore detection errors
+        }
       }, 150);
 
       return () => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
       };
-    }, [code, detectedLang, isHighlighterReady]);
+    }, [code, detectedLang, isHighlighterReady, detectLanguage]);
 
-    // Detect language from text using highlight.js
-    const detectLanguage = useCallback((text: string) => {
-      if (text.trim().length < 5) {
-        setDetectedLang("plaintext");
-        return;
-      }
-      const result = hljs.highlightAuto(text, SUPPORTED_LANG_NAMES);
-      const hljsLang = result.language ?? "plaintext";
-      const shikiLang = HLJS_TO_SHIKI[hljsLang] ?? "plaintext";
-      const finalLang = (result.relevance ?? 0) >= 5 ? shikiLang : "plaintext";
-      setDetectedLang(finalLang);
-      lastDetectionLengthRef.current = text.length;
-    }, []);
+    // Detect language from text using highlight.js (defined above)
 
     // Initialise shiki on mount
     useEffect(() => {
