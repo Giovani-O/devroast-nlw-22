@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Navbar } from "@/components/navbar";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
+  subsets: ["latin"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-secondary",
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
 });
 
@@ -19,8 +26,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${jetbrainsMono.variable} antialiased`}>
-        {children}
+      <body
+        className={`${jetbrainsMono.variable} ${ibmPlexMono.variable} antialiased bg-bg-page text-text-primary`}
+      >
+        <Navbar />
+        <main
+          className="w-full flex justify-center"
+          style={{
+            paddingTop: "80px",
+            paddingLeft: "40px",
+            paddingRight: "40px",
+          }}
+        >
+          <div className="w-full max-w-[960px] flex flex-col items-center">
+            {children}
+          </div>
+        </main>
       </body>
     </html>
   );

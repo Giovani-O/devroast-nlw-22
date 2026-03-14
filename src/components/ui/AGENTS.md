@@ -100,6 +100,26 @@ Auto-fix issues:
 npm run biome:fix
 ```
 
+### Code Quality Rules
+
+**HTML Entities in JSX** - Avoid unescaped special characters in JSX text:
+- Use template literals (backticks) for code snippets: `{`eval(prompt("enter code"))`}`
+- Use curly braces for static strings: `{"// comment text"}`
+- Use HTML entities for symbols: `&gt;`, `&lt;`, `&quot;` in JSX attributes/strings
+- This prevents `react/no-unescaped-entities` linting errors
+
+Example:
+```tsx
+// ❌ Incorrect - unescaped quotes
+<span>eval(prompt("enter code"))</span>
+
+// ✅ Correct - template literal
+<span>{`eval(prompt("enter code"))`}</span>
+
+// ✅ Correct - HTML entities in attributes
+<a href="/leaderboard">view full leaderboard &gt;&gt;</a>
+```
+
 ## File Naming
 
 - Use kebab-case: `button.tsx`, `input-field.tsx`
