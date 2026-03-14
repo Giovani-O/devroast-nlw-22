@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevRoast 🔥
 
-## Getting Started
+Cole seu código e receba análise com inteligência artificial. Escolha entre uma análise séria ou um roast completo do seu código.
 
-First, run the development server:
+## O que é DevRoast?
+
+DevRoast é uma plataforma onde você pode enviar trechos de código para serem analisados por IA. Você escolhe como quer receber o feedback: de forma séria e construtiva, ou em modo roast, onde a análise é mais descontraída e crítica. Independente do modo escolhido, você receberá um score, sugestões de melhoria e um diff destacando as mudanças propostas.
+
+## Funcionalidades
+
+- **Análise com IA** - Envie seu código e receba análise automática
+- **Dois modos de análise** - Escolha entre análise séria ou modo roast
+- **Score detalhado** - Veja uma pontuação visual do seu código
+- **Sugestões de melhoria** - Receba dicas para melhorar seu código
+- **Leaderboard da comunidade** - Veja como seu código se compara com outros
+
+## Como Usar
+
+1. Cole seu código na área de entrada
+2. Escolha o modo de análise (séria ou roast)
+3. Clique em "Analisar"
+4. Receba o resultado com score, feedback e sugestões
+
+## Para Desenvolvedores
+
+### Requisitos
+- Node.js 18+
+- npm ou yarn
+
+### Instalação
+
+```bash
+npm install
+```
+
+### Rodando localmente
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Outros comandos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build    # Build para produção
+npm run biome    # Verificar linting
+npx tsc --noEmit # Verificar tipos TypeScript
+```
 
-## Learn More
+## Desenvolvido em
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Projeto desenvolvido durante o evento **NLW (Next Level Week)** da **Rocketseat**.

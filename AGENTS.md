@@ -92,6 +92,21 @@ Example:
 <a href="/leaderboard">view full leaderboard &gt;&gt;</a>
 ```
 
+## Git & Version Control
+
+### Git Commands
+
+**⚠️ IMPORTANT: Never run any git commands (git add, git commit, git push, etc.) without explicit permission from the user.** This includes:
+- `git add` / `git stage`
+- `git commit`
+- `git push` / `git pull`
+- `git reset` / `git revert`
+- `git rebase` / `git merge`
+- `git checkout` / `git branch`
+- Any other git operations
+
+Always ask the user first before executing any git operations, and describe what you plan to do.
+
 ## Commands
 
 ```bash
