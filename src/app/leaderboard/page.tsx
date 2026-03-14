@@ -1,4 +1,5 @@
-import { codeToHtml } from "shiki";
+import type { CodeBlockMeta } from "@/components/ui/code-block";
+import { CodeBlock } from "@/components/ui/code-block";
 
 interface Entry {
   rank: number;
@@ -53,23 +54,6 @@ function scoreColor(score: number): string {
 }
 
 export default async function LeaderboardPage() {
-  const rendered = await Promise.all(
-    ENTRIES.map(async (entry) => {
-      const raw = await codeToHtml(entry.code, {
-        lang: entry.language,
-        theme: "vesper",
-      });
-      // Strip inline background-color from shiki's <pre> so our container bg shows through.
-      // CSS can't override inline styles without !important, so we remove it at the source.
-      const codeHtml = raw.replace(
-        /(<pre\b[^>]+)style="([^"]*)"/,
-        (_, pre: string, style: string) =>
-          `${pre}style="${style.replace(/background(?:-color)?:[^;]+;?\s*/gi, "")}"`,
-      );
-      return { ...entry, codeHtml };
-    }),
-  );
-
   return (
     <div className="w-full flex flex-col" style={{ gap: "40px" }}>
       {/* Hero Section */}
@@ -123,108 +107,22 @@ export default async function LeaderboardPage() {
 
       {/* Entries */}
       <div className="w-full flex flex-col mb-[60px]" style={{ gap: "20px" }}>
-        {rendered.map((entry) => {
-          const lineNums = Array.from({ length: entry.lines }, (_, i) => i + 1);
-
+        {ENTRIES.map((entry) => {
+          const meta: CodeBlockMeta = {
+            rank: entry.rank,
+            score: entry.score,
+            scoreColor: scoreColor(entry.score),
+            language: entry.language,
+            lines: entry.lines,
+          };
           return (
-            <div
+            <CodeBlock
               key={entry.rank}
-              className="w-full border border-border-primary overflow-hidden"
-            >
-              {/* Meta Row */}
-              <div
-                className="flex items-center justify-between border-b border-border-primary"
-                style={{ height: "48px", padding: "0 20px" }}
-              >
-                {/* Left: rank + score */}
-                <div className="flex items-center" style={{ gap: "16px" }}>
-                  {/* Rank */}
-                  <div className="flex items-center" style={{ gap: "6px" }}>
-                    <span
-                      className="font-mono text-text-tertiary"
-                      style={{ fontSize: "12px" }}
-                    >
-                      #
-                    </span>
-                    <span
-                      className="font-mono font-bold text-accent-amber"
-                      style={{ fontSize: "14px" }}
-                    >
-                      {entry.rank}
-                    </span>
-                  </div>
-
-                  {/* Score */}
-                  <div className="flex items-center" style={{ gap: "6px" }}>
-                    <span
-                      className="font-mono text-text-tertiary"
-                      style={{ fontSize: "12px" }}
-                    >
-                      score:
-                    </span>
-                    <span
-                      className={`font-mono font-bold ${scoreColor(entry.score)}`}
-                      style={{ fontSize: "13px" }}
-                    >
-                      {entry.score}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Right: language + lines */}
-                <div className="flex items-center" style={{ gap: "12px" }}>
-                  <span
-                    className="font-mono text-text-secondary"
-                    style={{ fontSize: "12px" }}
-                  >
-                    {entry.language}
-                  </span>
-                  <span
-                    className="font-mono text-text-tertiary"
-                    style={{ fontSize: "12px" }}
-                  >
-                    {entry.lines} lines
-                  </span>
-                </div>
-              </div>
-
-              {/* Code Block */}
-              <div
-                className="flex bg-bg-input overflow-hidden"
-                style={{ height: "120px" }}
-              >
-                {/* Line Numbers */}
-                <div
-                  className="flex flex-col items-end bg-bg-surface border-r border-border-primary flex-shrink-0"
-                  style={{
-                    width: "40px",
-                    padding: "14px 10px",
-                    gap: "6px",
-                  }}
-                >
-                  {lineNums.map((n) => (
-                    <span
-                      key={n}
-                      className="font-mono text-text-tertiary"
-                      style={{ fontSize: "12px", lineHeight: "1.6" }}
-                    >
-                      {n}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Shiki-highlighted code */}
-                <div
-                  className="flex-1 overflow-hidden leaderboard-code"
-                  style={{ padding: "14px 16px" }}
-                >
-                  <div
-                    // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki outputs pre-escaped HTML
-                    dangerouslySetInnerHTML={{ __html: entry.codeHtml }}
-                  />
-                </div>
-              </div>
-            </div>
+              code={entry.code}
+              language={entry.language}
+              maxHeight={120}
+              meta={meta}
+            />
           );
         })}
       </div>
