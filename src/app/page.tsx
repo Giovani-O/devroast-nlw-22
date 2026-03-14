@@ -9,6 +9,8 @@ import { Toggle } from "@/components/ui/toggle";
 export default function Home() {
   const [_code, setCode] = useState("");
   const [_lang, setLang] = useState("plaintext");
+  // Maximum allowed snippet size (characters)
+  const MAX_SNIPPET = 1000;
 
   return (
     <div className="w-full flex flex-col items-center gap-8">
@@ -41,27 +43,46 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Code Editor Area */}
-      <div className="w-full max-w-[780px] bg-bg-input border border-border-primary rounded-none overflow-hidden flex flex-col">
-        {/* Window Header */}
-        <div
-          className="bg-bg-input border-b border-border-primary px-4 flex items-center gap-2"
-          style={{ height: "40px" }}
-        >
-          <div className="flex gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+      <div className="flex flex-col justify-end w-full max-w-[780px] items-center">
+        {/* Code Editor Area */}
+        <div className="w-full max-w-[780px] bg-bg-input border border-border-primary rounded-none overflow-hidden flex flex-col">
+          {/* Window Header */}
+          <div
+            className="bg-bg-input border-b border-border-primary px-4 flex items-center gap-2"
+            style={{ height: "40px" }}
+          >
+            <div className="flex gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+            </div>
           </div>
+
+          {/* Code Content Area */}
+          <CodeEditor
+            maxLength={MAX_SNIPPET}
+            onChange={(c, l) => {
+              setCode(c);
+              setLang(l);
+            }}
+          />
         </div>
 
-        {/* Code Content Area */}
-        <CodeEditor
-          onChange={(c, l) => {
-            setCode(c);
-            setLang(l);
-          }}
-        />
+        {/* Character counter (right‑justified) */}
+        <div className="mt-0.5 ml-auto">
+          <div className="flex justify-end">
+            <span
+              className={
+                _code.length > MAX_SNIPPET
+                  ? "font-mono text-accent-red"
+                  : "font-mono text-text-tertiary"
+              }
+              style={{ fontSize: "12px" }}
+            >
+              {_code.length}/{MAX_SNIPPET}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Actions Bar */}
@@ -83,6 +104,7 @@ export default function Home() {
           rounded="none"
           className="font-mono"
           style={{ fontSize: "13px", padding: "10px 24px" }}
+          disabled={_code.length > MAX_SNIPPET}
         >
           $ roast_my_code
         </Button>

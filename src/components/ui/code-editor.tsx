@@ -56,6 +56,7 @@ const EDITOR_STYLE: React.CSSProperties = {
 export interface CodeEditorProps {
   onChange?: (code: string, language: string) => void;
   className?: string;
+  maxLength?: number;
 }
 
 /**
@@ -82,7 +83,7 @@ function makeRawHtml(code: string) {
 }
 
 export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
-  ({ onChange, className }, ref) => {
+  ({ onChange, className, maxLength }, ref) => {
     const [code, setCode] = useState<string>("");
     const [detectedLang, setDetectedLang] = useState<string>("plaintext");
     const [highlightedHtml, setHighlightedHtml] = useState<string>("");
@@ -227,7 +228,9 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const newCode = e.target.value;
+        let newCode = e.target.value;
+        if (typeof maxLength === "number")
+          newCode = newCode.slice(0, maxLength);
         setCode(newCode);
         // Show raw text immediately to eliminate perceived input lag
         setHighlightedHtml(makeRawHtml(newCode));
@@ -242,7 +245,7 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
           detectLanguage(newCode);
         }
       },
-      [detectedLang, onChange, detectLanguage],
+      [detectedLang, onChange, detectLanguage, maxLength],
     );
 
     const handlePaste = useCallback(
@@ -258,14 +261,32 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
           return;
         }
         const { selectionStart, selectionEnd, value } = ta;
-        const newCode =
+        let newCode =
           value.slice(0, selectionStart) + pasted + value.slice(selectionEnd);
+        if (typeof maxLength === "number") {
+          // trim pasted content to available space
+          const available = Math.max(
+            0,
+            maxLength - (value.length - (selectionEnd - selectionStart)),
+          );
+          if (pasted.length > available) {
+            const clipped = pasted.slice(0, available);
+            newCode =
+              value.slice(0, selectionStart) +
+              clipped +
+              value.slice(selectionEnd);
+          }
+          newCode = newCode.slice(0, maxLength);
+        }
         setCode(newCode);
         // Show raw immediately
         setHighlightedHtml(makeRawHtml(newCode));
         // move cursor after pasted content
         requestAnimationFrame(() => {
-          const pos = selectionStart + pasted.length;
+          const pos = Math.min(
+            selectionStart + pasted.length,
+            maxLength ?? selectionStart + pasted.length,
+          );
           ta.selectionStart = pos;
           ta.selectionEnd = pos;
         });
@@ -273,7 +294,7 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
         // run detection async
         setTimeout(() => detectLanguage(newCode), 0);
       },
-      [detectLanguage, onChange, detectedLang],
+      [detectLanguage, onChange, detectedLang, maxLength],
     );
 
     const handleKeyDown = useCallback(
@@ -289,8 +310,10 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
             const lineText = value.slice(lineStart);
             const spaces = Math.min(2, lineText.match(/^ */)?.[0].length ?? 0);
             if (spaces > 0) {
-              const newValue =
+              let newValue =
                 value.slice(0, lineStart) + value.slice(lineStart + spaces);
+              if (typeof maxLength === "number")
+                newValue = newValue.slice(0, maxLength);
               setCode(newValue);
               // Restore cursor position after React re-render
               requestAnimationFrame(() => {
@@ -300,11 +323,17 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
             }
           } else {
             // Tab: insert 2 spaces
-            const newValue = `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`;
+            let newValue = `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`;
+            if (typeof maxLength === "number")
+              newValue = newValue.slice(0, maxLength);
             setCode(newValue);
             requestAnimationFrame(() => {
-              textarea.selectionStart = selectionStart + 2;
-              textarea.selectionEnd = selectionStart + 2;
+              const pos = Math.min(
+                selectionStart + 2,
+                maxLength ?? selectionStart + 2,
+              );
+              textarea.selectionStart = pos;
+              textarea.selectionEnd = pos;
             });
           }
         } else if (e.key === "Enter") {
@@ -312,20 +341,25 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
           // Auto-indent: match leading whitespace of current line
           const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
           const leading = value.slice(lineStart).match(/^[ \t]*/)?.[0] ?? "";
-          const newValue =
+          let newValue =
             value.slice(0, selectionStart) +
             "\n" +
             leading +
             value.slice(selectionEnd);
+          if (typeof maxLength === "number")
+            newValue = newValue.slice(0, maxLength);
           setCode(newValue);
           requestAnimationFrame(() => {
-            const pos = selectionStart + 1 + leading.length;
+            const pos = Math.min(
+              selectionStart + 1 + leading.length,
+              maxLength ?? selectionStart + 1 + leading.length,
+            );
             textarea.selectionStart = pos;
             textarea.selectionEnd = pos;
           });
         }
       },
-      [],
+      [maxLength],
     );
 
     // Sync scroll between textarea, overlay, and line numbers
