@@ -30,14 +30,6 @@ function stripShikiBg(html: string): string {
   );
 }
 
-function escapeHtml(s: string) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function makePlainHtml(code: string) {
-  return `<pre><code style="font-family:var(--font-mono);font-size:12px;line-height:1.6">${escapeHtml(code)}</code></pre>`;
-}
-
 function scoreColor(score: number): string {
   if (score <= 3) return "text-accent-red";
   if (score <= 5) return "text-accent-orange";
@@ -51,45 +43,42 @@ function CodeSnippet({ code, language }: { code: string; language: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
+  const mountedRef = useRef(false);
 
   const visibleCode = expanded ? code : lines.slice(0, 3).join("\n");
 
   // Syntax highlight the visible code with Shiki
   useEffect(() => {
-    let cancelled = false;
-    setHighlightedHtml(makePlainHtml(visibleCode));
+    mountedRef.current = true;
 
     getHighlighter().then(async (h) => {
-      if (cancelled) return;
+      if (!mountedRef.current) return;
       try {
         await h.loadLanguage(language as Parameters<typeof h.loadLanguage>[0]);
       } catch {
-        // Language not in bundle — fall back to plaintext
         try {
           await h.loadLanguage("plaintext");
         } catch {
           /* ignore */
         }
-        if (!cancelled) {
-          setHighlightedHtml(
-            stripShikiBg(
-              h.codeToHtml(visibleCode, { lang: "plaintext", theme: "vesper" }),
-            ),
-          );
-        }
-        return;
-      }
-      if (!cancelled) {
+        if (!mountedRef.current) return;
         setHighlightedHtml(
           stripShikiBg(
-            h.codeToHtml(visibleCode, { lang: language, theme: "vesper" }),
+            h.codeToHtml(visibleCode, { lang: "plaintext", theme: "vesper" }),
           ),
         );
+        return;
       }
+      if (!mountedRef.current) return;
+      setHighlightedHtml(
+        stripShikiBg(
+          h.codeToHtml(visibleCode, { lang: language, theme: "vesper" }),
+        ),
+      );
     });
 
     return () => {
-      cancelled = true;
+      mountedRef.current = false;
     };
   }, [visibleCode, language]);
 
@@ -114,19 +103,27 @@ function CodeSnippet({ code, language }: { code: string; language: string }) {
         className="overflow-x-auto code-block-shiki"
         style={isOverflowing ? { paddingBottom: "10px" } : undefined}
       >
-        {highlightedHtml ? (
-          <div
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki outputs pre-escaped HTML
-            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-          />
-        ) : (
-          <pre
-            className="font-mono text-text-primary whitespace-pre"
-            style={{ fontSize: "12px", lineHeight: "1.6" }}
-          >
-            {visibleCode}
-          </pre>
-        )}
+        <div
+          className="transition-[max-height] duration-300 ease-in-out"
+          style={{
+            maxHeight: expanded ? "500px" : "calc(12px * 1.6 * 3 + 6px)",
+            overflow: "hidden",
+          }}
+        >
+          {highlightedHtml ? (
+            <div
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki outputs pre-escaped HTML
+              dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+            />
+          ) : (
+            <pre
+              className="font-mono text-text-primary whitespace-pre"
+              style={{ fontSize: "12px", lineHeight: "1.6" }}
+            >
+              {visibleCode}
+            </pre>
+          )}
+        </div>
       </div>
       {hasMore && (
         <button
