@@ -126,14 +126,14 @@ export function HomeLeaderboard() {
           </span>
         </div>
 
-        {/* Dynamic Body + Footer with Suspense */}
-        <HydrateClient>
-          <ErrorBoundary fallback={<LeaderboardError />}>
-            <Suspense fallback={<LeaderboardSkeleton />}>
+        {/* Dynamic Body + Footer — Suspense ensures server/client structural match */}
+        <Suspense fallback={<LeaderboardSkeleton />}>
+          <HydrateClient>
+            <ErrorBoundary fallback={<LeaderboardError />}>
               <HomeLeaderboardClient />
-            </Suspense>
-          </ErrorBoundary>
-        </HydrateClient>
+            </ErrorBoundary>
+          </HydrateClient>
+        </Suspense>
       </div>
     </div>
   );

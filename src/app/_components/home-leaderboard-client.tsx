@@ -36,6 +36,34 @@ function scoreColor(score: number): string {
   return "text-accent-blue";
 }
 
+function LeaderboardRowSkeleton({ rank }: { rank: number }) {
+  return (
+    <div
+      className="border-b border-border-primary flex items-center"
+      style={{ fontSize: "12px", padding: "16px 20px" }}
+    >
+      <span
+        className="font-mono text-text-secondary flex-shrink-0"
+        style={{ width: "50px" }}
+      >
+        {rank}
+      </span>
+      <span
+        className="font-mono flex-shrink-0 bg-bg-elevated animate-pulse"
+        style={{ width: "70px", height: "16px" }}
+      />
+      <span className="flex-1 font-mono flex flex-col gap-1">
+        <span className="block bg-bg-elevated animate-pulse h-4 w-3/4" />
+        <span className="block bg-bg-elevated animate-pulse h-4 w-1/2" />
+      </span>
+      <span
+        className="font-mono text-text-secondary flex-shrink-0 bg-bg-elevated animate-pulse"
+        style={{ width: "100px", height: "16px" }}
+      />
+    </div>
+  );
+}
+
 function CodeSnippet({ code, language }: { code: string; language: string }) {
   const lines = code.split("\n");
   const hasMore = lines.length > 3;
@@ -184,10 +212,34 @@ function LeaderboardRow({
 
 export function HomeLeaderboardClient() {
   const trpc = useTRPC();
-  const { data } = useQuery(trpc.leaderboard.worstEntries.queryOptions());
+  const { data, isLoading } = useQuery(
+    trpc.leaderboard.worstEntries.queryOptions(),
+  );
 
   const entries = data?.entries ?? [];
   const totalAnalyses = data?.totalAnalyses ?? 0;
+
+  // Render skeleton rows while loading to ensure server/client structural match
+  if (isLoading) {
+    return (
+      <>
+        <LeaderboardRowSkeleton rank={1} />
+        <LeaderboardRowSkeleton rank={2} />
+        <LeaderboardRowSkeleton rank={3} />
+        <div
+          className="flex justify-center border-t border-border-primary"
+          style={{ padding: "12px 20px" }}
+        >
+          <div
+            className="font-secondary text-text-tertiary flex items-center gap-1"
+            style={{ fontSize: "12px" }}
+          >
+            <span>{"loading..."}</span>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
