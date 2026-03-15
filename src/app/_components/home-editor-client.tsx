@@ -13,7 +13,7 @@ const MAX_SNIPPET = 1000;
 
 export function HomeEditorClient() {
   const [code, setCode] = useState("");
-  const [roastMode, setRoastMode] = useState(false);
+  const [roastMode, setRoastMode] = useState(true);
 
   const router = useRouter();
   const trpc = useTRPC();
