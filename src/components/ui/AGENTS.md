@@ -10,10 +10,25 @@ This directory contains generic UI components built with **composition patterns*
 - **tailwind-merge** - Merges Tailwind classes without conflicts
 - **tailwind-variants** - Component variants and type-safe class names
 - **clsx** - Utility for constructing className strings
+- **Radix UI** - Headless primitives (`@radix-ui/react-switch` for Toggle)
+- **Shiki** - Syntax highlighting (server-side in CodeBlock, client-side in CodeEditor)
+- **highlight.js** - Language auto-detection (CodeEditor)
 
-## Composition Pattern
+## Component Inventory
 
-### Shared Utilities
+| Component | File | Type | `"use client"` | Pattern |
+|-----------|------|------|-----------------|---------|
+| Button | `button.tsx` | Interactive | No | forwardRef + compound (Object.assign) |
+| Badge | `badge.tsx` | Display | No | forwardRef + compound (Object.assign) |
+| Card | `card.tsx` | Layout | No | forwardRef + compound (Object.assign) |
+| Table | `table-row.tsx` | Layout | No | forwardRef + compound (Object.assign) |
+| Toggle | `toggle.tsx` | Interactive | Yes | forwardRef (Radix primitive) |
+| CodeBlock | `code-block.tsx` | Display | No | Async server component |
+| CodeEditor | `code-editor.tsx` | Interactive | Yes | forwardRef (complex state) |
+| DiffLine | `diff-line.tsx` | Display | No | forwardRef (simple variant) |
+| ScoreRing | `score-ring.tsx` | Display | Yes | forwardRef (SVG-based) |
+
+## Shared Utilities
 
 All components use the shared `cn()` helper from `utils.ts`:
 
@@ -24,104 +39,64 @@ import { cn } from "./utils";
 className={cn(buttonVariants({ variant, size, className }))}
 ```
 
-### Compound Components
+The file also exports a `BaseComponentProps<T>` type alias for `HTMLAttributes<T>`, though current components import `HTMLAttributes` directly from React.
 
-Complex components are built using the **compound component pattern** with semantic sub-components. This reduces prop proliferation and improves API clarity.
+## Compound Components
 
-#### Example: Button Component
+Complex components are built using the **compound component pattern** with semantic sub-components attached via `Object.assign()`. There are two sub-patterns:
+
+### Variant Presets (Button, Badge)
+
+Sub-components wrap the base component with a pre-set default variant. Users can still override any variant prop.
 
 ```tsx
-// Using the base Button component (full control)
-<Button variant="default" size="lg" rounded="default">
-  Click me
-</Button>
+// Base component with full control
+<Button variant="default" size="lg" rounded="default">Click me</Button>
 
-// Using semantic sub-components (simpler API)
-<Button.Primary size="lg">
-  Click me
-</Button.Primary>
-
-<Button.Destructive>
-  Delete
-</Button.Destructive>
-
-<Button.Ghost>
-  Cancel
-</Button.Ghost>
+// Semantic sub-components with defaults
+<Button.Primary size="lg">Click me</Button.Primary>
+<Button.Destructive>Delete</Button.Destructive>
+<Button.Ghost>Cancel</Button.Ghost>
 ```
 
-#### Available Compound Components
+### Structural Composition (Card, Table)
 
-1. **Button** - Primary action component
-   - `Button` - Base with full variant control
-   - `Button.Primary` - Default/green button (default variant)
-   - `Button.Destructive` - Red/destructive button
-   - `Button.Secondary` - Secondary button
-   - `Button.Ghost` - Minimal button
-   - `Button.Outline` - Outlined button
-   - `Button.Link` - Link-style button
+Sub-components are separate elements intended to be nested. Each has its own styling and may extend different HTML element types.
 
-2. **Badge** - Status indicator component
-   - `Badge` - Base with full variant control
-   - `Badge.Critical` - Red/error status
-   - `Badge.Warning` - Amber/warning status
-   - `Badge.Good` - Green/success status (default)
-   - `Badge.Verdict` - Cyan/info status
+```tsx
+<Card variant="default">
+  <Card.Header>
+    <Card.Title>Title</Card.Title>
+    <Card.Description>Description</Card.Description>
+  </Card.Header>
+  <Card.Content>Main content here</Card.Content>
+  <Card.Footer>Footer content</Card.Footer>
+</Card>
+```
 
-3. **Card** - Content container component
-   - `Card` - Base container
-   - `Card.Header` - Header section
-   - `Card.Title` - Title text (use inside Header)
-   - `Card.Description` - Description text (use inside Header)
-   - `Card.Content` - Main content area
-   - `Card.Footer` - Footer section
+```tsx
+<Table>
+  <Table.Header>
+    <Table.Row>
+      <Table.Cell>Column 1</Table.Cell>
+    </Table.Row>
+  </Table.Header>
+  <Table.Body>
+    <Table.Row>
+      <Table.Cell>Data 1</Table.Cell>
+    </Table.Row>
+  </Table.Body>
+</Table>
+```
 
-   ```tsx
-   <Card variant="default">
-     <Card.Header>
-       <Card.Title>Title</Card.Title>
-       <Card.Description>Description</Card.Description>
-     </Card.Header>
-     <Card.Content>
-       Main content here
-     </Card.Content>
-     <Card.Footer>
-       Footer content
-     </Card.Footer>
-   </Card>
-   ```
+### Available Sub-Components
 
-4. **Table** - Table structure component
-   - `Table` - Base table container
-   - `Table.Header` - Header section (typically contains one row)
-   - `Table.Body` - Body section (contains data rows)
-   - `Table.Row` - Individual row
-   - `Table.Cell` - Individual cell (use inside Row)
-
-   ```tsx
-   <Table>
-     <Table.Header>
-       <Table.Row>
-         <Table.Cell>Column 1</Table.Cell>
-         <Table.Cell>Column 2</Table.Cell>
-       </Table.Row>
-     </Table.Header>
-     <Table.Body>
-       <Table.Row>
-         <Table.Cell>Data 1</Table.Cell>
-         <Table.Cell>Data 2</Table.Cell>
-       </Table.Row>
-     </Table.Body>
-   </Table>
-   ```
+1. **Button** - `Primary`, `Destructive`, `Secondary`, `Ghost`, `Outline`, `Link`
+2. **Badge** - `Critical`, `Warning`, `Good`, `Verdict`
+3. **Card** - `Header`, `Title`, `Description`, `Content`, `Footer`
+4. **Table** - `Header`, `Body`, `Row`, `Cell`
 
 ### Creating Compound Components
-
-When creating a new compound component:
-
-1. **Create the base component** with full variant control
-2. **Create semantic sub-components** with reasonable defaults
-3. **Use `Object.assign()`** to attach sub-components:
 
 ```tsx
 const ButtonComponent = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -129,7 +104,6 @@ const ButtonComponent = forwardRef<HTMLButtonElement, ButtonProps>(
     <button className={cn(buttonVariants({ variant, className }))} ref={ref} {...props} />
   ),
 );
-
 ButtonComponent.displayName = "Button";
 
 const ButtonPrimary = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -137,6 +111,7 @@ const ButtonPrimary = forwardRef<HTMLButtonElement, ButtonProps>(
     <ButtonComponent ref={ref} variant={variant} {...props} />
   ),
 );
+ButtonPrimary.displayName = "Button.Primary";
 
 export const Button = Object.assign(ButtonComponent, {
   Primary: ButtonPrimary,
@@ -145,9 +120,9 @@ export const Button = Object.assign(ButtonComponent, {
 
 ## Creating Components
 
-### Basic Structure (Variant-Based)
+### Standard Pattern (Variant-Based with forwardRef)
 
-For simple components with variants (not using composition):
+This is the default pattern for most components:
 
 ```tsx
 import { forwardRef, type HTMLAttributes } from "react";
@@ -194,121 +169,126 @@ export const ComponentName = forwardRef<HTMLDivElement, ComponentNameProps>(
 ComponentName.displayName = "ComponentName";
 ```
 
+### Async Server Components
+
+Some components (like CodeBlock) are async server components that do not use forwardRef:
+
+```tsx
+export interface CodeBlockProps {
+  code: string;
+  language?: string;
+}
+
+export async function CodeBlock({ code, language }: CodeBlockProps) {
+  const html = await codeToHtml(code, { lang: language, theme: "..." });
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+}
+```
+
+These components:
+- Do NOT use `forwardRef` or `displayName`
+- Do NOT extend native HTML attributes
+- Define custom props interfaces
+- Can use `await` for async operations (e.g., Shiki syntax highlighting)
+- May use `dangerouslySetInnerHTML` with a `biome-ignore` comment for rendered HTML
+
 ### Rules
 
 1. **Named exports only** - Never use default exports
-2. **Extend native props** - Components should extend their HTML element's native attributes (e.g., `ButtonHTMLAttributes<HTMLButtonElement>`)
-3. **Use forwardRef** - Enable ref forwarding for parent component access
-4. **Use tailwind-variants** - Define all variant styles using TV for consistency
-5. **Use shared `cn()` utility** - Import from `./utils` instead of defining locally
-6. **Use theme variables** - Always use theme variables from `globals.css` instead of hardcoded values
+2. **Extend native props** - Components should extend their HTML element's native attributes (e.g., `ButtonHTMLAttributes<HTMLButtonElement>`). Exception: async server components and components with complex custom props
+3. **Use forwardRef** - Enable ref forwarding for parent component access. Exception: async server components, plain function components
+4. **Use tailwind-variants** - Define variant styles using `tv()` when the component has visual variants. Components without variants may use `cn()` directly
+5. **Use shared `cn()` utility** - Import from `./utils`
+6. **Use theme variables** - Always use theme variables from `globals.css` instead of hardcoded hex values
 7. **Display name** - Set `ComponentName.displayName` after forwardRef
-8. **Add JSDoc comments** - Document component purpose and usage
+8. **JSDoc comments** - Document component purpose and usage
+9. **Export variant types** - Export `VariantProps<typeof ...>` as a named type when using `tv()`
 
-### Theme Variables
+### cn() Usage Patterns
 
-Available theme variables (defined in the global CSS):
+Two patterns exist in the codebase:
+
+```tsx
+// Pattern 1: className passed INTO tv() (preferred for variant components)
+className={cn(componentVariants({ variant, size, className }))}
+
+// Pattern 2: className as second arg to cn() (used for non-variant sub-components)
+className={cn(cardHeaderVariants(), className)}
+```
+
+### "use client" Directive
+
+Only add `"use client"` when the component requires:
+- React hooks (`useState`, `useEffect`, `useRef`)
+- Browser APIs or event handlers with state
+- Third-party client libraries (Radix UI primitives)
+
+Components without this directive can be used in both server and client components.
+
+## Theme Variables
+
+Available theme variables (defined in `globals.css`):
 
 | Category | Variables |
 |----------|-----------|
-| Colors | `accent-green`, `accent-amber`, `accent-cyan`, `accent-red`, `accent-blue`, `accent-orange` |
+| Accents | `accent-green`, `accent-amber`, `accent-cyan`, `accent-red`, `accent-blue`, `accent-orange` |
 | Backgrounds | `bg-page`, `bg-surface`, `bg-elevated`, `bg-input` |
 | Text | `text-primary`, `text-secondary`, `text-tertiary`, `text-muted` |
 | Borders | `border-primary`, `border-secondary`, `border-focus` |
-| Radius | `rounded-none`, `rounded-m`, `rounded-pill` |
+| Radius | `radius-none`, `radius-m`, `radius-pill` |
+
+Usage: `text-text-primary`, `bg-bg-surface`, `border-border-primary`, `text-accent-green`.
+
+For inline styles, reference CSS variables: `var(--color-accent-green)`, `var(--font-mono)`.
+
+## File Naming
+
+- Use kebab-case: `button.tsx`, `code-editor.tsx`, `score-ring.tsx`
+- Primary export should match filename: `button.tsx` exports `Button`, `code-editor.tsx` exports `CodeEditor`
+- Utility files: `utils.ts` for shared helpers
 
 ## Linting
 
 Run Biome before committing:
 
 ```bash
-npm run biome
+npm run biome      # Check
+npm run biome:fix  # Auto-fix
 ```
 
-Auto-fix issues:
+### HTML Entities in JSX
 
-```bash
-npm run biome:fix
-```
+Avoid unescaped special characters in JSX text:
 
-### Code Quality Rules
-
-**HTML Entities in JSX** - Avoid unescaped special characters in JSX text:
-- Use template literals (backticks) for code snippets: `{`eval(prompt("enter code"))`}`
-- Use curly braces for static strings: `{"// comment text"}`
-- Use HTML entities for symbols: `&gt;`, `&lt;`, `&quot;` in JSX attributes/strings
-- This prevents `react/no-unescaped-entities` linting errors
-
-Example:
 ```tsx
-// ❌ Incorrect - unescaped quotes
+// Incorrect - unescaped quotes
 <span>eval(prompt("enter code"))</span>
 
-// ✅ Correct - template literal
+// Correct - template literal
 <span>{`eval(prompt("enter code"))`}</span>
-
-// ✅ Correct - HTML entities in attributes
-<a href="/leaderboard">view full leaderboard &gt;&gt;</a>
 ```
 
-## File Naming
+### dangerouslySetInnerHTML
 
-- Use kebab-case: `button.tsx`, `input-field.tsx`
-- Export component as named export matching filename: `export const Button`
-- Utility files: `utils.ts` for shared helpers
+When using `dangerouslySetInnerHTML` (e.g., for Shiki HTML output), suppress the Biome lint with:
+
+```tsx
+// biome-ignore lint/security/noDangerouslySetInnerHtml: Shiki generates safe HTML
+<div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
+```
 
 ## Examples Page
 
-All UI components must be documented in the examples page within the app directory.
+A component preview page exists at `src/app/_components/page.tsx` (hidden behind the underscore prefix). It demonstrates all UI component variants and serves as living documentation. Remove the underscore from the folder name to view at `/components`.
 
 ### When Creating a New Component
 
 1. Create the component in this directory
-2. Add a new section to the examples page following the existing pattern:
-
-```tsx
-import { ComponentName } from "@/components/ui/component-name";
-
-export default function ComponentsPage() {
-  return (
-    <section className="space-y-4">
-      <h2 className="text-lg font-medium text-text-primary">ComponentName</h2>
-      <p className="text-text-secondary text-sm">
-        Description of what the component does.
-      </p>
-
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h3 className="text-text-tertiary text-sm">Variants</h3>
-          <div className="flex flex-wrap gap-4">
-            <ComponentName>default</ComponentName>
-            <ComponentName variant="secondary">secondary</ComponentName>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="text-text-tertiary text-sm">Sizes</h3>
-          <div className="flex flex-wrap items-center gap-4">
-            <ComponentName size="sm">small</ComponentName>
-            <ComponentName size="default">default</ComponentName>
-            <ComponentName size="lg">large</ComponentName>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-```
+2. Add a new section to the examples page following the existing pattern
+3. Show all variants, sizes, and states
 
 ### When Editing an Existing Component
 
-1. Review the current examples in the examples page
-2. Check if any of the following changes were made:
-   - New variants added, removed, or modified
-   - New sizes added, removed, or modified
-   - New props added that affect rendering
-   - Default values changed
-   - New sub-components added
-3. If any changes affect the examples, update the page accordingly
-4. Run the lint and typecheck commands to verify everything passes
-
+1. Check if new variants, sizes, or props were added/changed
+2. Update the examples page if any visual changes were made
+3. Run `npm run biome` and `npx tsc --noEmit` to verify

@@ -41,9 +41,6 @@ export const ScoreRing = forwardRef<HTMLDivElement, ScoreRingProps>(
         {...props}
       >
         <svg className="absolute inset-0 -rotate-90" width={size} height={size}>
-          <title>
-            Score: {score} out of {maxScore}
-          </title>
           <circle
             cx={size / 2}
             cy={size / 2}
