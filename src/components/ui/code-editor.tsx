@@ -391,7 +391,7 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
           className="bg-bg-surface border-r border-border-primary py-4 font-mono text-text-tertiary flex flex-col items-end overflow-hidden flex-shrink-0"
           style={{
             width: "48px",
-            fontSize: "12px",
+            fontSize: "14px",
             lineHeight: "1.6",
             paddingLeft: "8px",
             paddingRight: "8px",
@@ -403,7 +403,7 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
               key={n}
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "12px",
+                fontSize: "14px",
                 lineHeight: "1.6",
                 height: "calc(14px * 1.6)",
                 display: "block",

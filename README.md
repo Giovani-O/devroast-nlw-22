@@ -49,7 +49,7 @@ npm run biome    # Verificar linting
 npx tsc --noEmit # Verificar tipos TypeScript
 ```
 
-Adicionalmente, você pode popular o banco com dados de exemplo (100 submissões + 100 análises) rodando:
+Adicionalmente, você pode popular o banco com dados de exemplo (10 submissões + 10 análises) rodando:
 
 ```bash
 npm run seed     # Popular o banco com dados de exemplo (usa tsx + @faker-js/faker)
@@ -67,7 +67,24 @@ Crie um arquivo `.env.local` na raiz do projeto com o seguinte conteúdo:
 ```env
 DATABASE_URL=postgresql://devroast:devroast_pw@localhost:5432/devroast
 AI_MODEL_VERSION=1.0.0
+MISTRAL_API_KEY=sua_chave_api_aqui
+ANALYZE_SECRET=sua_chave_secreta_aqui
+NEXT_PUBLIC_API_URL=http://localhost:3000
+APP_URL=http://localhost:3000
 ```
+
+#### Variáveis de ambiente
+
+| Variável | Descrição |
+|----------|-----------|
+| `DATABASE_URL` | String de conexão do PostgreSQL |
+| `AI_MODEL_VERSION` | Versão do modelo de IA utilizado nas análises |
+| `MISTRAL_API_KEY` | Chave da API da Mistral (obrigatória para gerar análises) |
+| `ANALYZE_SECRET` | Segredo para autenticar requisições na API de revalidação de cache |
+| `NEXT_PUBLIC_API_URL` | URL pública da API (use http://localhost:3000 para desenvolvimento) |
+| `APP_URL` | URL principal da aplicação (use http://localhost:3000 para desenvolvimento) |
+
+A chave da API da Mistral pode ser obtida gratuitamente no [console da Mistral](https://console.mistral.ai/upgrade/plans). A versão gratuita (free tier) possui limites de uso suficientes para desenvolvimento local.
 
 #### Subir o PostgreSQL com Docker
 
