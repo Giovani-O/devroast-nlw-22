@@ -1,15 +1,34 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
+import { TRPCClientError } from "@trpc/client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/ui/code-editor";
 import { Toggle } from "@/components/ui/toggle";
+import { useTRPC } from "@/trpc/client";
 
 const MAX_SNIPPET = 1000;
 
 export function HomeEditorClient() {
   const [code, setCode] = useState("");
-  const [_lang, setLang] = useState("plaintext");
+  const [roastMode, setRoastMode] = useState(false);
+
+  const router = useRouter();
+  const trpc = useTRPC();
+
+  const { mutate, isPending, error } = useMutation(
+    trpc.analysis.submit.mutationOptions({
+      onSuccess: (data) => {
+        router.push(`/roast/${data.analysisId}`);
+      },
+    }),
+  );
+
+  const isRateLimit =
+    error instanceof TRPCClientError &&
+    error.data?.code === "TOO_MANY_REQUESTS";
 
   return (
     <>
@@ -29,13 +48,7 @@ export function HomeEditorClient() {
           </div>
 
           {/* Code Content Area */}
-          <CodeEditor
-            maxLength={MAX_SNIPPET}
-            onChange={(c, l) => {
-              setCode(c);
-              setLang(l);
-            }}
-          />
+          <CodeEditor maxLength={MAX_SNIPPET} onChange={(c) => setCode(c)} />
         </div>
 
         {/* Character counter (right-justified) */}
@@ -56,28 +69,52 @@ export function HomeEditorClient() {
       </div>
 
       {/* Actions Bar */}
-      <div className="w-full max-w-[780px] flex items-center justify-between">
-        {/* Left Side - Toggle + Text */}
-        <div className="flex items-center gap-2.5">
-          <Toggle aria-label="Toggle roast mode" />
-          <span
-            className="font-mono text-text-secondary"
-            style={{ fontSize: "13px" }}
+      <div className="w-full max-w-[780px] flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          {/* Left Side - Toggle + Text */}
+          <div className="flex items-center gap-2.5">
+            <Toggle
+              aria-label="Toggle roast mode"
+              checked={roastMode}
+              onCheckedChange={setRoastMode}
+            />
+            <span
+              className="font-mono text-text-secondary"
+              style={{ fontSize: "13px" }}
+            >
+              roast mode
+            </span>
+          </div>
+
+          {/* Right Side - Submit Button */}
+          <Button
+            variant="default"
+            rounded="none"
+            className="font-mono"
+            style={{ fontSize: "13px", padding: "10px 24px" }}
+            disabled={
+              code.length === 0 || code.length > MAX_SNIPPET || isPending
+            }
+            onClick={() =>
+              mutate({ code, analysisMode: roastMode ? "roast" : "serious" })
+            }
           >
-            roast mode
-          </span>
+            {isPending ? "$ analyzing..." : "$ roast_my_code"}
+          </Button>
         </div>
 
-        {/* Right Side - Submit Button */}
-        <Button
-          variant="default"
-          rounded="none"
-          className="font-mono"
-          style={{ fontSize: "13px", padding: "10px 24px" }}
-          disabled={code.length > MAX_SNIPPET}
-        >
-          $ roast_my_code
-        </Button>
+        {/* Inline error display */}
+        {error && (
+          <span
+            role="alert"
+            className="font-mono text-accent-red"
+            style={{ fontSize: "12px" }}
+          >
+            {isRateLimit
+              ? "// rate limit exceeded. try again later."
+              : "// something went wrong. try again."}
+          </span>
+        )}
       </div>
     </>
   );

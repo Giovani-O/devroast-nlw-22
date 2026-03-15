@@ -1,4 +1,7 @@
+import { headers } from "next/headers";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { Skeleton } from "@/components/ui/skeleton";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { HomeStatsClient } from "./home-stats-client";
 
@@ -16,7 +19,9 @@ function HomeStatsError() {
   );
 }
 
-export function HomeStats() {
+async function HomeStatsContent() {
+  // Establish request-dynamic context before dehydrate() runs in HydrateClient
+  await headers();
   prefetch(trpc.leaderboard.stats.queryOptions());
 
   return (
@@ -25,5 +30,24 @@ export function HomeStats() {
         <HomeStatsClient />
       </ErrorBoundary>
     </HydrateClient>
+  );
+}
+
+export function HomeStats() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          className="flex items-center gap-6 justify-center font-secondary text-text-tertiary"
+          style={{ fontSize: "12px" }}
+        >
+          <Skeleton className="h-4 w-[100px]" />
+          <span>·</span>
+          <Skeleton className="h-4 w-[80px]" />
+        </div>
+      }
+    >
+      <HomeStatsContent />
+    </Suspense>
   );
 }

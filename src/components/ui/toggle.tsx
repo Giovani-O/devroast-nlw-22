@@ -1,7 +1,7 @@
 "use client";
 
 import * as SwitchPrimitives from "@radix-ui/react-switch";
-import { type ButtonHTMLAttributes, forwardRef } from "react";
+import { forwardRef } from "react";
 import { tv, type VariantProps } from "tailwind-variants";
 import { cn } from "./utils";
 
@@ -37,7 +37,7 @@ const toggleThumbVariants = tv({
 export type ToggleVariants = VariantProps<typeof toggleVariants>;
 
 export interface ToggleProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
+  extends SwitchPrimitives.SwitchProps,
     ToggleVariants {}
 
 /**

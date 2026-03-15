@@ -212,15 +212,15 @@ function LeaderboardRow({
 
 export function HomeLeaderboardClient() {
   const trpc = useTRPC();
-  const { data, isLoading } = useQuery(
-    trpc.leaderboard.worstEntries.queryOptions(),
-  );
+  const { data } = useQuery(trpc.leaderboard.worstEntries.queryOptions());
 
   const entries = data?.entries ?? [];
   const totalAnalyses = data?.totalAnalyses ?? 0;
 
-  // Render skeleton rows while loading to ensure server/client structural match
-  if (isLoading) {
+  // Render skeleton rows when data is not yet available.
+  // Use !data (not isLoading) so server-hydrated data renders real rows immediately,
+  // preventing a hydration mismatch between server (real rows) and client (skeleton).
+  if (!data) {
     return (
       <>
         <LeaderboardRowSkeleton rank={1} />

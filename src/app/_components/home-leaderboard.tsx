@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -60,9 +61,21 @@ function LeaderboardError() {
   );
 }
 
-export function HomeLeaderboard() {
+async function HomeLeaderboardBody() {
+  // Establish request-dynamic context before dehydrate() runs in HydrateClient
+  await headers();
   prefetch(trpc.leaderboard.worstEntries.queryOptions());
 
+  return (
+    <HydrateClient>
+      <ErrorBoundary fallback={<LeaderboardError />}>
+        <HomeLeaderboardClient />
+      </ErrorBoundary>
+    </HydrateClient>
+  );
+}
+
+export function HomeLeaderboard() {
   return (
     <div className="w-full max-w-[960px] flex flex-col gap-6">
       {/* Title Row */}
@@ -128,11 +141,7 @@ export function HomeLeaderboard() {
 
         {/* Dynamic Body + Footer — Suspense ensures server/client structural match */}
         <Suspense fallback={<LeaderboardSkeleton />}>
-          <HydrateClient>
-            <ErrorBoundary fallback={<LeaderboardError />}>
-              <HomeLeaderboardClient />
-            </ErrorBoundary>
-          </HydrateClient>
+          <HomeLeaderboardBody />
         </Suspense>
       </div>
     </div>
