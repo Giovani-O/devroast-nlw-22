@@ -3,7 +3,10 @@ import "server-only";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
-import { caller, HydrateClient, prefetch, trpc } from "@/trpc/server";
+import {
+  getLeaderboardPage,
+  getLeaderboardStats,
+} from "@/lib/leaderboard-cache";
 import { LeaderboardEntries } from "./_components/leaderboard-entries";
 
 function CardSkeleton() {
@@ -80,8 +83,8 @@ function EntriesError() {
 }
 
 export default async function LeaderboardPage() {
-  const stats = await caller.leaderboard.stats();
-  prefetch(trpc.leaderboard.paginatedEntries.queryOptions({ page: 1 }));
+  const stats = await getLeaderboardStats();
+  const initialData = await getLeaderboardPage(1);
 
   const avgDisplay =
     stats.avgScore !== null ? `${stats.avgScore.toFixed(1)}/10` : "--/10";
@@ -139,11 +142,9 @@ export default async function LeaderboardPage() {
 
       {/* Entries */}
       <Suspense fallback={<EntriesSkeleton />}>
-        <HydrateClient>
-          <ErrorBoundary fallback={<EntriesError />}>
-            <LeaderboardEntries />
-          </ErrorBoundary>
-        </HydrateClient>
+        <ErrorBoundary fallback={<EntriesError />}>
+          <LeaderboardEntries initialData={initialData} />
+        </ErrorBoundary>
       </Suspense>
     </div>
   );

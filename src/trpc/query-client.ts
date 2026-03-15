@@ -7,7 +7,8 @@ export function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30 * 1000,
+        // TanStack Query client-side cache - Next.js "use cache" handles server-side caching
+        staleTime: 10 * 60 * 1000, // 10 minutes
       },
       dehydrate: {
         shouldDehydrateQuery: (query) =>

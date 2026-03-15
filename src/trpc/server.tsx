@@ -26,6 +26,7 @@ export function HydrateClient({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // biome-ignore lint/suspicious/noExplicitAny: generic helper mirrors tRPC docs pattern
 export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
   queryOptions: T,
@@ -39,5 +40,6 @@ export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
     void qc.prefetchQuery(queryOptions);
   }
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export const caller = appRouter.createCaller(createTRPCContext);

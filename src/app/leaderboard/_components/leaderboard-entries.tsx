@@ -40,8 +40,8 @@ function stripShikiBg(html: string): string {
 // ---------------------------------------------------------------------------
 
 function scoreColor(score: number): string {
-  if (score <= 3) return "text-accent-red";
-  if (score <= 5) return "text-accent-orange";
+  if (score <= 33) return "text-accent-red";
+  if (score <= 66) return "text-accent-orange";
   return "text-accent-blue";
 }
 
@@ -329,7 +329,17 @@ function CardSkeleton() {
 // Main export: LeaderboardEntries
 // ---------------------------------------------------------------------------
 
-export function LeaderboardEntries() {
+type LeaderboardData = {
+  entries: Array<{ code: string; score: number; language: string }>;
+  totalCount: number;
+  totalPages: number;
+};
+
+interface LeaderboardEntriesProps {
+  initialData: LeaderboardData;
+}
+
+export function LeaderboardEntries({ initialData }: LeaderboardEntriesProps) {
   const trpc = useTRPC();
   const [page, setPage] = useState(1);
   const entriesRef = useRef<HTMLDivElement>(null);
@@ -338,15 +348,18 @@ export function LeaderboardEntries() {
     trpc.leaderboard.paginatedEntries.queryOptions({ page }),
   );
 
-  const entries = data?.entries ?? [];
-  const totalPages = data?.totalPages ?? 1;
+  // Use initialData for page 1 (server-rendered), data for other pages
+  const displayData = page === 1 ? initialData : data;
+  const entries = displayData?.entries ?? [];
+  const totalPages = displayData?.totalPages ?? 1;
 
   const goToPage = (newPage: number) => {
     setPage(newPage);
     entriesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  if (isLoading) {
+  // Show skeleton while loading for pages > 1
+  if (isLoading && page > 1) {
     return (
       <div className="w-full flex flex-col" style={{ gap: "20px" }}>
         <CardSkeleton />
