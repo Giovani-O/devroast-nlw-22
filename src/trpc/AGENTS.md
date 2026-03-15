@@ -71,7 +71,8 @@ Server Component (prefetch)
 #### `query-client.ts` - QueryClient Factory
 
 - **`makeQueryClient()`**: Shared factory used by both server and client
-- **`staleTime: 30_000`** (30 seconds): Queries are fresh for 30 seconds
+- **`staleTime: 10 * 60 * 1000`** (10 minutes): Queries are fresh for 10 minutes
+- **Note**: This is a fallback for client-side caching. Prefer Next.js 16 Cache Components for server-side caching (see root AGENTS.md)
 - **Custom dehydration**: Also dehydrates queries with `status === "pending"` (critical for server prefetch where queries may still be pending during render)
 
 ## Router Patterns

@@ -145,6 +145,32 @@ export function HomeStatsClient() {
 }
 ```
 
+### Server-Side Caching with "use cache"
+
+For pages with data that changes infrequently, use Next.js 16 Cache Components instead of TanStack Query hydration. See the root AGENTS.md for full documentation.
+
+```tsx
+// src/lib/leaderboard-cache.ts
+import { cacheTag, cacheLife } from "next/cache";
+import { db } from "@/db/client";
+
+export async function getLeaderboardStats() {
+  "use cache";
+  cacheTag("leaderboard-stats");
+  cacheLife({ stale: 600, revalidate: 600, expire: 600 }); // 10 minutes
+
+  return db.select().from(analyses).where(eq(analyses.status, "completed"));
+}
+
+// src/app/leaderboard/page.tsx
+import { getLeaderboardStats } from "@/lib/leaderboard-cache";
+
+export default async function LeaderboardPage() {
+  const stats = await getLeaderboardStats();
+  // ... render
+}
+```
+
 ### Error Boundaries
 
 Wrap client components that fetch data in `<ErrorBoundary>` from `react-error-boundary`:

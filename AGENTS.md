@@ -42,12 +42,112 @@ devroast/
     components/       # Shared components (navbar, ui/)
       ui/             # Generic design system components
     db/               # Drizzle ORM schema, client, migrations
-    lib/              # Shared utility functions
+    lib/              # Shared utility functions (e.g., leaderboard-cache.ts)
     trpc/             # tRPC setup (client, server, routers)
   scripts/            # CLI scripts (seed)
   specs/              # Feature specifications
   public/             # Static assets
 ```
+
+## Caching
+
+DevRoast uses Next.js 16's **Cache Components** for server-side caching. This replaces client-side staleTime-based caching with explicit, granular control.
+
+### Enabling Cache Components
+
+Add to `next.config.ts`:
+
+```ts
+const nextConfig: NextConfig = {
+  cacheComponents: true,
+};
+```
+
+### Cache Functions
+
+Create cached data functions in `src/lib/` using the `"use cache"` directive:
+
+```ts
+// src/lib/leaderboard-cache.ts
+import { cacheTag, cacheLife } from "next/cache";
+import { db } from "@/db/client";
+import { analyses } from "@/db/schema";
+import { eq, count } from "drizzle-orm";
+
+const CACHE_DURATION = 60 * 10; // 10 minutes in seconds
+
+export async function getLeaderboardStats() {
+  "use cache";
+  cacheTag("leaderboard-stats");
+  cacheLife({ stale: CACHE_DURATION, revalidate: CACHE_DURATION, expire: CACHE_DURATION });
+
+  const result = await db.select({ count: count() }).from(analyses);
+  return result[0]?.count ?? 0;
+}
+```
+
+Key points:
+- **`"use cache"`**: Marks the function as cacheable
+- **`cacheTag("name")`**: Tags the cache for on-demand invalidation
+- **`cacheLife({ stale, revalidate, expire })`**: Sets cache duration in seconds
+- **Direct DB calls**: Don't use `caller` inside cache functions (it uses `headers()` which makes it dynamic)
+
+### On-Demand Revalidation
+
+Create an API route to purge cache:
+
+```ts
+// src/app/api/revalidate/leaderboard/route.ts
+import { revalidateTag } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(request: NextRequest) {
+  const secret = request.headers.get("x-revalidate-secret");
+  if (secret !== process.env.REVALIDATE_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  revalidateTag("leaderboard-stats", "max");
+
+  return NextResponse.json({ revalidated: true });
+}
+```
+
+Trigger revalidation:
+
+```bash
+curl -X POST https://yourdomain.com/api/revalidate/leaderboard \
+  -H "x-revalidate-secret: YOUR_SECRET"
+```
+
+### Client-Side Hydration
+
+For client-side navigation (pagination), pass server-cached data as props:
+
+```tsx
+// Server component
+import { getLeaderboardStats, getLeaderboardPage } from "@/lib/leaderboard-cache";
+
+export default async function LeaderboardPage() {
+  const stats = await getLeaderboardStats();
+  const initialData = await getLeaderboardPage(1);
+
+  return <LeaderboardEntries initialData={initialData} />;
+}
+
+// Client component
+export function LeaderboardEntries({ initialData }: { initialData: LeaderboardData }) {
+  const { data } = useQuery(trpc.leaderboard.paginatedEntries.queryOptions({ page }));
+
+  // Use initialData for page 1, data for other pages
+  const displayData = page === 1 ? initialData : data;
+}
+```
+
+### When to Use Cache Components
+
+- **Use for**: Data that changes infrequently (leaderboard stats, user profiles, product catalogs)
+- **Don't use for**: Real-time data, personalized content, request-specific data
 
 ## Pencil Design Reference (Pencil MCP)
 
