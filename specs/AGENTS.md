@@ -51,3 +51,4 @@ Links to docs, related files in the codebase, external examples.
 | `CODE_EDITOR_SPEC.md` | Live code editor with Shiki syntax highlighting and highlight.js language detection |
 | `DRIZZLE_IMPLEMENTATION_SPEC.md` | Drizzle ORM integration: schema, client, migrations, seed script |
 | `TRPC_IMPLEMENTATION_SPEC.md` | tRPC v11 setup with TanStack React Query, server prefetch, and client hydration |
+| `ROAST_ANALYSIS_SPEC.md` | Roast analysis feature: AI integration, submit mutation, results page with polling |
